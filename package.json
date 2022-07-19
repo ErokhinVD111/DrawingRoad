@@ -1,0 +1,16 @@
+{
+  "type": "module",
+  "name": "drawingroad",
+  "version": "1.0.0",
+  "description": "",
+  "main": "mapFactory.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "leaflet-arrowheads": "^1.4.0"
+  }
+}
