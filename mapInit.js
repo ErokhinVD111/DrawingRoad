@@ -9,6 +9,7 @@ const objectMap = MapFactory.getMap('https://{s}.tile.openstreetmap.org/{z}/{x}/
 objectMap.map.setView([57.9657406, 56.2447505], 17)
 L.marker([57.9657406, 56.2447505]).addTo(objectMap.map).bindPopup("<p>Перекресток</p>")
 
+kfjfkjf
 // const latlngs1 = [
 //     [57.9658852, 56.2440939],
 //     [57.9659119, 56.2437187],
