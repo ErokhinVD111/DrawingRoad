@@ -19,9 +19,56 @@ function drawIntersection(intersection, map) {
     const intersectionIcon = getIntersectionIcon([intersection.refPoint.lat, intersection.refPoint.lon])
     intersectionIcon.on('click', (e) => {
         intersectionIcon.remove()
-        drawLanes(intersection, map)
+        const drawnLanes = drawLanes(intersection, map)
+        // drawnLanes.forEach(drawnLane => {
+        //     console.log(drawnLane)
+        //     drawnLanes.forEach(anotherDrawnLane => {
+        //         if (typeof drawnLane.connectingLanes !== 'undefined') {
+        //             drawnLane.connectingLanes.forEach(connectingLane => {
+        //                 if (connectingLane === anotherDrawnLane.laneID) {
+        //                     joinLanes(drawnLane, anotherDrawnLane, map)
+        //                 }
+        //             })
+        //         }
+        //     })
+        // })
     })
     intersectionIcon.addTo(map)
+}
+
+
+function joinLanes(firstLane, secondLane, map) {
+    const middleLane = L.polyline([...firstLane.middleLane.getLatLngs().slice(-1), ...secondLane.middleLane.getLatLngs().slice(0)], {weight: 1}).addTo(map)
+    //secondLane.middleLane.remove()
+    //firstLane.middleLaneDecorator.remove()
+    secondLane.middleLaneDecorator.remove()
+    // const multiPolyline = L.polygon([...coordsOfUpBoundLane, ...coordsOfBottomBoundLane.reverse()], {
+    //     color: 'black',
+    //     weight: 1,
+    //     fillColor: 'yellow'
+    // }).addTo(map)
+    //
+    const middleLaneDecorator = L.polylineDecorator(middleLane, {
+        patterns: [
+            {
+                offset: '20%',
+                repeat: 80,
+                symbol: L.Symbol.arrowHead({pixelSize: 10, polygon: false, pathOptions: {stroke: true}})
+            }
+        ]
+    }).addTo(map)
+
+    // console.log(...firstLane.bounds.getLatLngs())
+    // console.log(secondLane.bounds.getLatLngs())
+    // console.log([].concat(...firstLane.bounds.getLatLngs(), ...secondLane.bounds.getLatLngs()))
+    // const multiPolyline = L.polygon([].concat(...firstLane.bounds.getLatLngs(), ...secondLane.bounds.getLatLngs()), {
+    //     color: 'black',
+    //     weight: 1,
+    //     fillColor: 'yellow'
+    // }).addTo(map)
+
+    //firstLane.bounds.
+
 }
 
 
@@ -52,6 +99,7 @@ function drawLanes(intersection, map) {
         return arrayOfCoords
     }
 
+    const drawnLanes = []
 
     intersection.lanesData.forEach(laneData => {
 
@@ -71,11 +119,12 @@ function drawLanes(intersection, map) {
         const middleLane = L.polyline(coordsMiddleLane, {weight: 1}).addTo(map)
 
         const multiPolyline = L.polygon([...coordsOfUpBoundLane, ...coordsOfBottomBoundLane.reverse()], {
-            color: 'red',
-            weight: 1
+            color: 'black',
+            weight: 1,
+            fillColor: 'yellow'
         }).addTo(map)
 
-        L.polylineDecorator(middleLane, {
+        const middleLaneDecorator = L.polylineDecorator(middleLane, {
             patterns: [
                 {
                     offset: '20%',
@@ -84,63 +133,18 @@ function drawLanes(intersection, map) {
                 }
             ]
         }).addTo(map);
+
+        drawnLanes.push({
+            'connectingLanes': laneData.connectingLane,
+            'laneID': laneData.laneID,
+            'middleLane': middleLane,
+            'bounds': multiPolyline,
+            'middleLaneDecorator': middleLaneDecorator
+        })
     })
+    return drawnLanes
 }
 
-
-
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//     intersection.lanesData.forEach(laneData => {
-//         let index = -1
-//         const arrayLatLngUp = []
-//         const arrayLatLngDown = []
-//         for (let i = 0; i < laneData.lat.length; i++) {
-//             const delta = getDeltaLatLon(laneData.lat[i], laneData.lon[i])
-//             arrayLatLngUp.push([Number(laneData.lat[i]) + index * Number(delta.lat), laneData.lon[i]])
-//         }
-//         for (let i = 0; i < laneData.lat.length; i++) {
-//             const delta = getDeltaLatLon(laneData.lat[i], laneData.lon[i])
-//             arrayLatLngDown.push([Number(laneData.lat[i]) - index * Number(delta.lat), laneData.lon[i]])
-//         }
-//         const latlngsMultiPolyline = [...arrayLatLngUp, ...arrayLatLngDown.reverse()]
-//         const latlngs = []
-//         for (let i = 0; i < laneData.lat.length; i++) {
-//             latlngs.push([laneData.lat[i], laneData.lon[i]])
-//         }
-//         if (laneData.directionalUse === '10') {
-//             latlngs.reverse()
-//         }
-//         const polyline = L.polyline(latlngs, {
-//             weight: 1
-//         }).addTo(map)
-//         const multiPolyline = L.polygon(latlngsMultiPolyline, {
-//             color: 'red',
-//             weight: 1
-//         }).addTo(map).on('click', (e) => multiPolyline.remove())
-//         L.polylineDecorator(polyline, {
-//             patterns: [
-//                 // defines a pattern of 10px-wide dashes, repeated every 20px on the line
-//                 {
-//                     offset: '20%',
-//                     repeat: 70,
-//                     symbol: L.Symbol.arrowHead({pixelSize: 10, polygon: false, pathOptions: {stroke: true}})
-//                 }
-//             ]
-//         }).addTo(map);
-//         intersectionIcon.remove()
-//     })
-// }
 
 export {
     intersectionDrawHandler
