@@ -121,7 +121,7 @@ function drawLanes(intersection, map) {
         const multiPolyline = L.polygon([...coordsOfUpBoundLane, ...coordsOfBottomBoundLane.reverse()], {
             color: 'black',
             weight: 1,
-            fillColor: 'yellow'
+            fillColor: 'black'
         }).addTo(map)
 
         const middleLaneDecorator = L.polylineDecorator(middleLane, {
