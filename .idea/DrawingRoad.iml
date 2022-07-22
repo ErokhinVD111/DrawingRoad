@@ -10,5 +10,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="leaflet" level="application" />
     <orderEntry type="library" name="leaflet.polylineDecorator" level="application" />
+    <orderEntry type="library" name="leaflet.curve" level="application" />
   </component>
 </module>

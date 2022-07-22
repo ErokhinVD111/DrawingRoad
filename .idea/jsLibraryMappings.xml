@@ -2,7 +2,7 @@
 <project version="4">
   <component name="JavaScriptLibraryMappings">
     <file url="file://$PROJECT_DIR$/mapLeafLet.html" libraries="{leaflet}" />
-    <file url="PROJECT" libraries="{leaflet, leaflet.polylineDecorator}" />
+    <file url="PROJECT" libraries="{leaflet, leaflet.curve, leaflet.polylineDecorator}" />
     <includedPredefinedLibrary name="HTTP Response Handler" />
   </component>
 </project>

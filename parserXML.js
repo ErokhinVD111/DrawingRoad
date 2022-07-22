@@ -1,5 +1,17 @@
 //получать все перекрестки и данные о всех дорогах
 //(сделал)
+
+import {xml2json} from "./xml2json.js";
+
+//Нужно получать массив из объектов (перекрестки)
+// const objectIntersection = {
+//     id,
+//     laneWidth,
+//     lanesData,
+//     refPoint,
+// }
+
+
 function parseXML(stringXML) {
     const parser = new DOMParser()
     const xmlDoc = parser.parseFromString(stringXML, "text/xml")
@@ -129,6 +141,74 @@ function parseXML(stringXML) {
     return arrayOfIntersectionsData
 }
 
+function parseXML2JSON(stringXML) {
+    const parser = new DOMParser()
+    const xmlDoc = parser.parseFromString(stringXML, "text/xml")
+    return JSON.parse(xml2json(xmlDoc).replace('undefined', ''))
+}
+
+function parseXML_v2(stringXML) {
+    const jsonObject = parseXML2JSON(stringXML)
+    console.log(jsonObject)
+    const arrayOfIntersections = []
+
+    const objectIntersection = {}
+
+    //jsonObject['MapData']['intersections'].forEach(intersection => {})
+
+    objectIntersection['id'] = jsonObject['MapData']['intersections']['IntersectionGeometry']['id']
+    objectIntersection['laneWidth'] = jsonObject['MapData']['intersections']['IntersectionGeometry']['laneWidth'] / 100
+
+    const intersectionLat = jsonObject['MapData']['intersections']['IntersectionGeometry']['refPoint']['lat'] / 10000000
+    const intersectionLon = jsonObject['MapData']['intersections']['IntersectionGeometry']['refPoint']['long'] / 10000000
+
+    objectIntersection['refPoint'] = {lat: intersectionLat, lon: intersectionLon}
+    objectIntersection['speedLimit'] = jsonObject['MapData']
+                                                 ['intersections']
+                                                 ['IntersectionGeometry']
+                                                 ['speedLimits']
+                                                 ['RegulatorySpeedLimit']
+                                                 ['speed']
+
+    const lanesData = []
+
+    jsonObject['MapData']['intersections']['IntersectionGeometry']['laneSet']['GenericLane'].forEach(genericLane => {
+        const laneData = {}
+
+        const connectingLanes = []
+        try {
+            genericLane['connectsTo']['Connection'].forEach(connection => connectingLanes.push(connection['connectingLane']['lane']))
+        }
+        catch (e) {
+
+        }
+
+        laneData['connectingLanes'] = connectingLanes
+        laneData['maneuvers'] = genericLane['maneuvers']
+        laneData['laneID'] = genericLane['laneID']
+
+        const nodeLat = []
+        const nodeLon = []
+        genericLane['nodeList']['nodes']['NodeXY'].forEach(node => {
+            nodeLat.push(node['delta']['node-LatLon']['lat'] / 10000000)
+            nodeLon.push(node['delta']['node-LatLon']['lon'] / 10000000)
+        })
+        laneData['lat'] = nodeLat
+        laneData['lon'] = nodeLon
+
+        laneData['directionalUse'] = genericLane['laneAttributes']['directionalUse']
+        laneData['laneType'] = genericLane['laneAttributes']['laneType']['vehicle']
+        laneData['sharedWith'] = genericLane['laneAttributes']['sharedWith']
+
+        lanesData.push(laneData)
+    })
+    objectIntersection['lanesData'] = lanesData
+    console.log(objectIntersection)
+    arrayOfIntersections.push(objectIntersection)
+    return arrayOfIntersections
+}
+
 export {
-    parseXML
+    parseXML,
+    parseXML_v2
 }
