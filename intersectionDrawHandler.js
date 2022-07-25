@@ -20,18 +20,14 @@ class DrawingIntersections {
 
     drawIntersections() {
         this.arrayOfIntersections.forEach(intersection => {
-
             intersection.lanesData.forEach(laneData => {
-                this.drawLanes(laneData, intersection, true, this.map)
-                this.showExitLines()
+                this.drawLane(laneData, intersection, this.map)
+                this.addConnectingLanes()
             })
         })
-        //this.drawnLanes.forEach(drawnLane => {
-        //    this.removeDrawnLane(drawnLane)
-        //})
     }
 
-    drawLanes(laneData, intersection, isDrawing, map) {
+    drawLane(laneData, intersection, map) {
         //Получение координат для границ полосы
         function getCoordsBoundLane(typeBound, deltaLan, deltaLon) {
             const coordsBoundLane = []
@@ -113,55 +109,74 @@ class DrawingIntersections {
             return stopLine
         }
 
-        if (isDrawing === true) {
-            const coordsOfMiddleLine = getCoordsMiddleLine()
-            const delta = CalculateDeltaLatLon()
-            const coordsOfFirstBound = getCoordsBoundLane('UP', delta.deltaLat, delta.deltaLon)
-            const coordsOfSecondBound = getCoordsBoundLane('DOWN', delta.deltaLat, delta.deltaLon)
 
-            const bounds = drawBounds(coordsOfFirstBound, coordsOfSecondBound)
-            const middleLineWithDecorator = drawMiddleLineWithDecorator(coordsOfMiddleLine)
-            const stopLine = drawStopLine(coordsOfMiddleLine, delta.deltaLat, delta.deltaLon)
+        //Получение всех координат
+        const coordsOfMiddleLine = getCoordsMiddleLine()
+        const delta = CalculateDeltaLatLon()
+        const coordsOfFirstBound = getCoordsBoundLane('UP', delta.deltaLat, delta.deltaLon)
+        const coordsOfSecondBound = getCoordsBoundLane('DOWN', delta.deltaLat, delta.deltaLon)
 
-            this.drawnLanes.push({
-                delta,
-                middleLineWithDecorator,
-                bounds,
-                stopLine,
-                connectingLanes: laneData.connectingLanes,
-                laneID: laneData.laneID,
-                joinLanes: []
-            })
-        }
+
+        //Отрисовка полосы и ее частей по координатам
+        const bounds = drawBounds(coordsOfFirstBound, coordsOfSecondBound)
+        const middleLineWithDecorator = drawMiddleLineWithDecorator(coordsOfMiddleLine)
+        const stopLine = drawStopLine(coordsOfMiddleLine, delta.deltaLat, delta.deltaLon)
+
+        //Создание нарисованного объекта и добавление его в массив
+        this.drawnLanes.push({
+            delta,
+            middleLineWithDecorator,
+            bounds,
+            stopLine,
+            connectingLanes: laneData.connectingLanes,
+            laneID: laneData.laneID,
+            connectedLanes: []
+        })
+
     }
+
 
     //Удаляет все элементы с карты
     removeDrawnLane(drawnLane) {
-        drawnLane.middleLineWithDecorator.middleLine.remove()
-        drawnLane.middleLineWithDecorator.middleLineDecorator.remove()
-        drawnLane.bounds.remove()
-        if (drawnLane.stopLine !== null)
-            drawnLane.stopLine.remove()
+        Object.values(drawnLane).forEach(value => {
+            if (value !== null) {
+                value.remove()
+            }
+        })
     }
 
-    showExitLines() {
+    addConnectingLanes() {
+        this.drawnLanes.forEach(drawnLane => {
+            if (drawnLane.connectingLanes !== null) {
+                this.drawnLanes.forEach(anotherLane => {
+                    if (drawnLane.connectingLanes.includes(anotherLane.laneID)) {
+                        drawnLane.bounds.on('click', (e) => this.drawConnectingLanes(drawnLane, anotherLane))
+                        drawnLane.middleLineWithDecorator.middleLine.on('click', (e) => this.drawConnectingLanes(drawnLane, anotherLane))
+                        drawnLane.middleLineWithDecorator.middleLineDecorator.on('click', (e) => this.drawConnectingLanes(drawnLane, anotherLane))
+                    }
+                })
+            }
+        })
+
+
+
+
         this.drawnLanes.forEach(drawnLane => {
             if (drawnLane.connectingLanes !== null) {
                 this.drawnLanes.forEach(anotherLane => {
                     drawnLane.connectingLanes.forEach(connectingLane => {
                         if (connectingLane === anotherLane.laneID) {
                             drawnLane.bounds.on('click', (e) => {
-                                if (drawnLane.joinLanes.length !== drawnLane.connectingLanes.length) {
-                                    this.drawExitLines(drawnLane, anotherLane)
-                                    console.log(drawnLane.joinLanes.length)
+                                if (drawnLane.connectedLanes.length !== drawnLane.connectingLanes.length) {
+                                    this.drawConnectingLanes(drawnLane, anotherLane)
+                                    console.log(drawnLane.connectedLanes.length)
                                     console.log(drawnLane.connectingLanes.length)
-                                }
-                                else {
-                                    drawnLane.joinLanes.forEach(joinLane => {
+                                } else {
+                                    drawnLane.connectedLanes.forEach(joinLane => {
                                         joinLane.exitLine.remove()
                                         joinLane.exitLineDecorator.remove()
                                     })
-                                    drawnLane.joinLanes.length = 0
+                                    drawnLane.connectedLanes.length = 0
                                 }
                             })
                         }
@@ -172,7 +187,7 @@ class DrawingIntersections {
     }
 
     //Рисует линии для съезда
-    drawExitLines(firstLane, secondLane) {
+    drawConnectingLanes(firstLane, secondLane) {
         //Функция для получения массива координат через прямую Безье
         function getCoordsForExitLine(x1, y1, x2, y2, x3, y3) {
             const arrayOfCoordsForExitLine = []
@@ -184,6 +199,7 @@ class DrawingIntersections {
             }
             return arrayOfCoordsForExitLine
         }
+
         //Координаты конца у первой полосы
         let firstLaneCoords = {
             lat: firstLane.middleLineWithDecorator.middleLine.getLatLngs().slice(-1)[0]['lat'],
@@ -214,7 +230,7 @@ class DrawingIntersections {
             ]
         }).addTo(this.map);
 
-        firstLane.joinLanes.push({exitLine, exitLineDecorator})
+        firstLane.connectedLanes.push({exitLine, exitLineDecorator})
 
     }
 
