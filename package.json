@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@elfalem/leaflet-curve": "^0.9.1",
+    "leaflet-arc": "^1.0.2",
     "leaflet-arrowheads": "^1.4.0",
     "Leaflet.MultiOptionsPolyline": "^1.0.0"
   }

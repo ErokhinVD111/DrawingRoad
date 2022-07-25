@@ -11,5 +11,6 @@
     <orderEntry type="library" name="leaflet" level="application" />
     <orderEntry type="library" name="leaflet.polylineDecorator" level="application" />
     <orderEntry type="library" name="leaflet.curve" level="application" />
+    <orderEntry type="library" name="leaflet-arc" level="application" />
   </component>
 </module>
