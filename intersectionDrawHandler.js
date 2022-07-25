@@ -1,6 +1,164 @@
 import {getDeltaLatLon} from "./calculateDistance.js"
 
-//import { curve } from "/leaflet.curve.js";
+//Создать классы: DrawingLanes, DrawingConnectingLanes
+
+class DrawingConnectingLines {
+    constructor(drawnLanes, map) {
+        this.drawnLanes = drawnLanes
+        this.map = map
+    }
+
+    //Используется кривая Безье для получения дугообразной траектории
+    //x - latitude, y - longitude
+    //x1, y1 - начальная точка
+    //x2, y2 - средняя точка
+    //x3, y3 - конечная точка
+    getCoordsForConnectingLine(x1, y1, x2, y2, x3, y3) {
+
+    }
+
+
+    drawConnectingLines() {
+
+    }
+
+    addConnectingLinesForLane() {
+
+    }
+
+    removeConnectingLines() {
+
+    }
+
+
+
+}
+
+class DrawingLanes {
+    constructor(lanesData, map) {
+        this.lanesData = lanesData
+        this.map = map
+        this.drawnLanes = []
+    }
+
+    //Метод для отрисовки полос из массива lanesData
+    drawLanes() {
+        this.lanesData.forEach(laneData => this.drawLane(laneData))
+    }
+
+    //Метод для отрисовки элементов полосы
+    drawLane(laneData) {
+        //Получение данных для отрисовки
+        const coordsForMiddleLine = this.getCoordsForMiddleLine(laneData)
+        const delta = this.calculateDeltaLatLon(laneData)
+        const coordsForFirstBound = this.getCoordsForBound(laneData, 'UP', delta.lat, delta.lon)
+        const coordsForSecondBound = this.getCoordsForBound(laneData, 'DOWN', delta.lat, delta.lon)
+
+        //Отрисовка необходимых частей
+        const middleLineWithDecorator = this.drawMiddleLineWithDecorator(laneData)
+        const bounds = this.drawBounds(laneData)
+        const stopLine = this.drawStopLine(laneData)
+
+        //Создаем единый объект из нарисованных объектов и добавляем в массив
+        this.drawnLanes.push({
+            middleLineWithDecorator,
+            bounds,
+            stopLine,
+            delta,
+
+        })
+    }
+
+    //Метод для получения координат для верхней и нижней границы
+    //Данные координаты используются для отрисовки ширины полосы
+    getCoordsForBound(laneData, typeBound, deltaLan, deltaLon) {
+        const coordsBoundLane = []
+        for (let i = 0; i < laneData.lon.length; i++) {
+            if (typeBound === 'UP') {
+                coordsBoundLane.push([laneData.lat[i] + deltaLan, laneData.lon[i] + deltaLon])
+            } else {
+                coordsBoundLane.push([laneData.lat[i] - deltaLan, laneData.lon[i] - deltaLon])
+            }
+        }
+        return coordsBoundLane
+    }
+
+    //Метод для получения координат для средней линии
+    //Данные координаты используются для отрисовки средней линии
+    getCoordsForMiddleLine(laneData) {
+        const coordsOfMiddleLine = []
+        for (let i = 0; i < laneData.lat.length; i++) {
+            coordsOfMiddleLine.push([laneData.lat[i], laneData.lon[i]])
+        }
+        //Меняем направление в зависимости от атрибута 'directionalUse'
+        if (laneData.directionalUse === '10') {
+            coordsOfMiddleLine.reverse()
+        }
+        return coordsOfMiddleLine
+    }
+
+    //Метод для получения смещения относительно координат средней полосы
+    //Используется для отрисовки ширины полосы
+    calculateDeltaLatLon(laneData) {
+        let deltaLat, deltaLon
+        //Если больше изменяется долгота, то границы будут более вертикальными
+        if (Math.abs(laneData.lat[0] - laneData.lat[laneData.lat.length - 1]) < Math.abs(laneData.lon[0] - laneData.lon[laneData.lon.length - 1])) {
+            deltaLat = getDeltaLatLon(laneData.lat[0], laneData.lon[0], (intersection.laneWidth) / 2).lat
+            deltaLon = 0
+        }
+        //Если больше изменяется широта, то границы будут более горизонтальными
+        else {
+            deltaLat = 0
+            deltaLon = getDeltaLatLon(laneData.lat[0], laneData.lon[0], (intersection.laneWidth) / 2).lon
+        }
+        return {deltaLat, deltaLon}
+    }
+
+    //Метод для отрисовки средней линии и направления движенеия (реализовано через polyline decorator)
+    drawMiddleLineWithDecorator(coordsForMiddleLine) {
+        const middleLine = L.polyline(coordsForMiddleLine, {weight: 1, color: 'black'}).addTo(this.map)
+        const middleLineDecorator = L.polylineDecorator(middleLine, {
+            patterns: [
+                {
+                    offset: '2%',
+                    repeat: 20,
+                    symbol: L.Symbol.arrowHead(
+                        {
+                            pixelSize: 5, polygon: false, pathOptions: {
+                                stroke: true
+                            }
+                        })
+                }
+            ]
+        }).addTo(this.map);
+        return {middleLine, middleLineDecorator}
+    }
+
+    //Метод для отрисовки границ полосы
+    drawBounds(coordsForFirstBound, coordsForSecondBound) {
+        const bounds = L.polygon([...coordsForFirstBound, ...coordsForSecondBound.reverse()], {
+            color: 'black',
+            weight: 1,
+            fillColor: 'black',
+            fillOpacity: 0.5
+        }).addTo(this.map)
+        return bounds
+    }
+
+    //Метод для отрисовки стоп линии
+    drawStopLine(laneData) {
+        let stopLine = null
+        if (laneData['directionalUse'] === '10') {
+            stopLine = L.polyline([[coordsMiddleLane[coordsMiddleLane.length - 1][0] + deltaLat, coordsMiddleLane[coordsMiddleLane.length - 1][1] + deltaLon],
+                [coordsMiddleLane[coordsMiddleLane.length - 1][0] - deltaLat, coordsMiddleLane[coordsMiddleLane.length - 1][1] - deltaLon]], {
+                weight: 3,
+                color: 'red'//'#03fce8'
+            }).addTo(this.map)
+        }
+        return stopLine
+    }
+}
+
 
 class DrawingIntersections {
     constructor(arrayOfIntersections, map) {
@@ -9,22 +167,17 @@ class DrawingIntersections {
         this.drawnLanes = []
     }
 
-    drawIntersectionIcon(refPoint) {
-        this.intersectionIcon = L.circle([refPoint.lat, refPoint.lon], {
-            color: "red",
-            fillColor: "#f03",
-            fillOpacity: 0.5,
-            radius: 70
-        })
-    }
-
     drawIntersections() {
         this.arrayOfIntersections.forEach(intersection => {
             intersection.lanesData.forEach(laneData => {
                 this.drawLane(laneData, intersection, this.map)
-                this.addConnectingLanes()
             })
         })
+        this.addConnectingLanes()
+    }
+
+    drawIntersection(intersection) {
+
     }
 
     drawLane(laneData, intersection, map) {
@@ -72,7 +225,7 @@ class DrawingIntersections {
 
         //Отрисовка средней линии у полосы
         function drawMiddleLineWithDecorator(coordsOfMiddleLine) {
-            const middleLine = L.polyline(coordsOfMiddleLine, {weight: 1, color: 'yellow'}).addTo(map)
+            const middleLine = L.polyline(coordsOfMiddleLine, {weight: 1, color: 'black'}).addTo(map)
             const middleLineDecorator = L.polylineDecorator(middleLine, {
                 patterns: [
                     {
@@ -124,6 +277,14 @@ class DrawingIntersections {
 
         //Создание нарисованного объекта и добавление его в массив
         this.drawnLanes.push({
+            laneInfo: {
+                sharedWith: laneData.sharedWith,
+                maneuvers: laneData.maneuvers,
+                laneType: laneData.laneType,
+                directionalUse: laneData.directionalUse,
+                laneID: laneData.laneID,
+                connectingLanes: laneData.connectingLanes
+            },
             delta,
             middleLineWithDecorator,
             bounds,
@@ -145,283 +306,99 @@ class DrawingIntersections {
         })
     }
 
+    //Добавляет линии (линии съезда на другую полосу)
     addConnectingLanes() {
         this.drawnLanes.forEach(drawnLane => {
-            if (drawnLane.connectingLanes !== null) {
-                this.drawnLanes.forEach(anotherLane => {
-                    if (drawnLane.connectingLanes.includes(anotherLane.laneID)) {
-                        drawnLane.bounds.on('click', (e) => this.drawConnectingLanes(drawnLane, anotherLane))
-                        drawnLane.middleLineWithDecorator.middleLine.on('click', (e) => this.drawConnectingLanes(drawnLane, anotherLane))
-                        drawnLane.middleLineWithDecorator.middleLineDecorator.on('click', (e) => this.drawConnectingLanes(drawnLane, anotherLane))
-                    }
-                })
-            }
-        })
+            drawnLane.bounds.on('click', (e) => this.drawConnectingLanes(drawnLane, this.map))
+            drawnLane.middleLineWithDecorator.middleLine.on('click', (e) => this.drawConnectingLanes(drawnLane, this.map))
+            drawnLane.middleLineWithDecorator.middleLineDecorator.on('click', (e) => this.drawConnectingLanes(drawnLane, this.map))
 
-
-
-
-        this.drawnLanes.forEach(drawnLane => {
-            if (drawnLane.connectingLanes !== null) {
-                this.drawnLanes.forEach(anotherLane => {
-                    drawnLane.connectingLanes.forEach(connectingLane => {
-                        if (connectingLane === anotherLane.laneID) {
-                            drawnLane.bounds.on('click', (e) => {
-                                if (drawnLane.connectedLanes.length !== drawnLane.connectingLanes.length) {
-                                    this.drawConnectingLanes(drawnLane, anotherLane)
-                                    console.log(drawnLane.connectedLanes.length)
-                                    console.log(drawnLane.connectingLanes.length)
-                                } else {
-                                    drawnLane.connectedLanes.forEach(joinLane => {
-                                        joinLane.exitLine.remove()
-                                        joinLane.exitLineDecorator.remove()
-                                    })
-                                    drawnLane.connectedLanes.length = 0
-                                }
-                            })
-                        }
-                    })
-                })
-            }
         })
     }
+
 
     //Рисует линии для съезда
-    drawConnectingLanes(firstLane, secondLane) {
-        //Функция для получения массива координат через прямую Безье
-        function getCoordsForExitLine(x1, y1, x2, y2, x3, y3) {
-            const arrayOfCoordsForExitLine = []
-            const step = 0.0005
-            for (let t = 0; t < 1; t += step) {
-                const lat = Math.pow((1 - t), 2) * x1 + 2 * (1 - t) * t * x2 + Math.pow(t, 2) * x3
-                const lon = Math.pow((1 - t), 2) * y1 + 2 * (1 - t) * t * y2 + Math.pow(t, 2) * y3
-                arrayOfCoordsForExitLine.push([lat, lon])
+    drawConnectingLanes(drawnLane, map) {
+        if (drawnLane.connectedLanes.length === drawnLane.connectedLanes.length && drawnLane.connectedLanes.length !== 0
+            || document.getElementById("p1").innerHTML.length > 0) {
+            this.removeConnectingLanes(drawnLane)
+            document.getElementById("p1").innerHTML = "";
+
+        } else {
+            this.drawnLanes.forEach(anotherLane => {
+                if (drawnLane.connectingLanes.includes(anotherLane.laneID)) {
+                    connectLanes(drawnLane, anotherLane)
+                }
+                const laneInfo = `Тип полосы: ${drawnLane.laneInfo.laneType}<br>
+                    Полосы для съезда: ${drawnLane.laneInfo.connectingLanes}<br>
+                    Направление движения: ${drawnLane.laneInfo.directionalUse}<br>
+                    ID полосы: ${drawnLane.laneInfo.laneID}<br>`
+                document.getElementById("p1").innerHTML = laneInfo;
+            })
+        }
+
+        function connectLanes(firstLane, secondLane) {
+            function getCoordsForExitLine(x1, y1, x2, y2, x3, y3) {
+                const arrayOfCoordsForExitLine = []
+                const step = 0.001
+                for (let t = 0; t < 1; t += step) {
+                    const lat = Math.pow((1 - t), 2) * x1 + 2 * (1 - t) * t * x2 + Math.pow(t, 2) * x3
+                    const lon = Math.pow((1 - t), 2) * y1 + 2 * (1 - t) * t * y2 + Math.pow(t, 2) * y3
+                    arrayOfCoordsForExitLine.push([lat, lon])
+                }
+                return arrayOfCoordsForExitLine
             }
-            return arrayOfCoordsForExitLine
-        }
 
-        //Координаты конца у первой полосы
-        let firstLaneCoords = {
-            lat: firstLane.middleLineWithDecorator.middleLine.getLatLngs().slice(-1)[0]['lat'],
-            lon: firstLane.middleLineWithDecorator.middleLine.getLatLngs().slice(-1)[0]['lng']
-        }
-        //Кординаты начала у второй полосы
-        let secondLaneCoords = {
-            lat: secondLane.middleLineWithDecorator.middleLine.getLatLngs().slice(0)[0]['lat'],
-            lon: secondLane.middleLineWithDecorator.middleLine.getLatLngs().slice(0)[0]['lng']
-        }
+            //Координаты конца у первой полосы
+            let firstLaneCoords = {
+                lat: firstLane.middleLineWithDecorator.middleLine.getLatLngs().slice(-1)[0]['lat'],
+                lon: firstLane.middleLineWithDecorator.middleLine.getLatLngs().slice(-1)[0]['lng']
+            }
 
+            //Кординаты начала у второй полосы
+            let secondLaneCoords = {
+                lat: secondLane.middleLineWithDecorator.middleLine.getLatLngs().slice(0)[0]['lat'],
+                lon: secondLane.middleLineWithDecorator.middleLine.getLatLngs().slice(0)[0]['lng']
+            }
 
-        const coordsForExitLine = getCoordsForExitLine(firstLaneCoords.lat, firstLaneCoords.lon,
-            57.965896, 56.244605, secondLaneCoords.lat, secondLaneCoords.lon)
+            const coordsForExitLine = getCoordsForExitLine(firstLaneCoords.lat, firstLaneCoords.lon,
+                57.965890, 56.244655, secondLaneCoords.lat, secondLaneCoords.lon)
 
-        const exitLine = L.polyline(coordsForExitLine, {
-            weight: 1,
-            color: 'black'
-        }).addTo(this.map)
+            const exitLine = L.polyline(coordsForExitLine, {
+                weight: 1,
+                color: 'black'
+            }).addTo(map)
 
-        const exitLineDecorator = L.polylineDecorator(exitLine, {
-            patterns: [
-                {
-                    offset: '20%',
-                    repeat: 70,
-                    symbol: L.Symbol.arrowHead({pixelSize: 10, polygon: false, pathOptions: {stroke: true}})
-                }
-            ]
-        }).addTo(this.map);
-
-        firstLane.connectedLanes.push({exitLine, exitLineDecorator})
-
-    }
-
-    hideExitLines(firstLane, secondLane) {
-
-    }
-}
-
-
-function getIntersectionIcon(coords) {
-    return L.circle(coords, {
-        color: "red",
-        fillColor: "#f03",
-        fillOpacity: 0.5,
-        radius: 70
-    })
-}
-
-function intersectionDrawHandler(arrayOfIntersectionsData, map) {
-    arrayOfIntersectionsData.forEach(intersection => {
-        drawIntersection(intersection, map)
-    })
-}
-
-
-function drawIntersection(intersection, map) {
-    const intersectionIcon = getIntersectionIcon([intersection.refPoint.lat, intersection.refPoint.lon])
-    intersectionIcon.on('click', (e) => {
-        intersectionIcon.remove()
-        const drawnLanes = drawLanes(intersection, map)
-        drawnLanes.forEach(drawnLane => {
-            drawnLanes.forEach(anotherDrawnLane => {
-                // console.log(drawnLane.connectingLanes)
-                if (typeof drawnLane.connectingLanes !== 'undefined') {
-                    drawnLane.bounds.on('click', (e) => {
-                        drawnLane.connectingLanes.forEach(connectingLane => {
-                            if (connectingLane === anotherDrawnLane.laneID) {
-                                joinLanes(drawnLane, anotherDrawnLane, map)
-                            }
+            const exitLineDecorator = L.polylineDecorator(exitLine, {
+                patterns: [
+                    {
+                        offset: '2%',
+                        repeat: 40,
+                        symbol: L.Symbol.arrowHead({
+                            pixelSize: 5,
+                            polygon: false,
+                            pathOptions: {stroke: true}
                         })
-                    })
-                }
+                    }
+                ]
+            }).addTo(map);
+
+            firstLane.connectedLanes.push({exitLine, exitLineDecorator})
+        }
+    }
+
+    removeConnectingLanes(drawnLane) {
+        drawnLane.connectedLanes.forEach(connectedLane => {
+            Object.values(connectedLane).forEach(value => {
+                value.remove()
             })
         })
-    })
-    intersectionIcon.addTo(map)
-}
-
-
-function joinLanes(firstLane, secondLane, map) {
-    //const middleLane = L.polyline([...firstLane.middleLane.getLatLngs().slice(-1), ...secondLane.middleLane.getLatLngs().slice(0)], {weight: 1}).addTo(map)
-    //secondLane.middleLane.remove()
-    //firstLane.middleLaneDecorator.remove()
-    // console.log(firstLane.middleLane.getLatLngs().slice(-1)[0]['lng'])
-    const fLane = {
-        lat: firstLane.middleLane.getLatLngs().slice(-1)[0]['lat'],
-        lon: firstLane.middleLane.getLatLngs().slice(-1)[0]['lng']
+        drawnLane.connectedLanes.length = 0
     }
-    // console.log(fLane)
-    const sLane = {
-        lat: secondLane.middleLane.getLatLngs().slice(0)[0]['lat'],
-        lon: secondLane.middleLane.getLatLngs().slice(0)[0]['lng']
-    }
-    //middleLane.remove()
-    const midLane = L.curve(["M", [fLane.lat, fLane.lon], "Q", [57.965896, 56.244605], [sLane.lat, sLane.lon]], {
-        color: 'black',
-        weight: 1
-    }).addTo(map);
-
-
-    //secondLane.middleLaneDecorator.remove()
-    // const multiPolyline = L.polygon([...coordsOfUpBoundLane, ...coordsOfBottomBoundLane.reverse()], {
-    //     color: 'black',
-    //     weight: 1,
-    //     fillColor: 'yellow'
-    // }).addTo(map)
-    //
-
-    const middleLaneDecorator = L.polylineDecorator(midLane, {
-        patterns: [
-            {
-                offset: '100%',
-                repeat: 10,
-                symbol: L.Symbol.arrowHead({pixelSize: 10, polygon: false, pathOptions: {stroke: true}})
-            }
-        ]
-    }).addTo(map)
-
-    // console.log(...firstLane.bounds.getLatLngs())
-    // console.log(secondLane.bounds.getLatLngs())
-    // console.log([].concat(...firstLane.bounds.getLatLngs(), ...secondLane.bounds.getLatLngs()))
-    // const multiPolyline = L.polygon([].concat(...firstLane.bounds.getLatLngs(), ...secondLane.bounds.getLatLngs()), {
-    //     color: 'black',
-    //     weight: 1,
-    //     fillColor: 'yellow'
-    // }).addTo(map)
-
-    //firstLane.bounds.
-
-}
-
-
-function drawLanes(intersection, map) {
-
-    //Получение координат для границ (верхней и нижней)
-    function getCoordsBoundLane(laneData, typeBound, deltaLan, deltaLon) {
-        const coordsBoundLane = []
-        for (let i = 0; i < laneData.lon.length; i++) {
-            if (typeBound === 'UP') {
-                coordsBoundLane.push([laneData.lat[i] + deltaLan, laneData.lon[i] + deltaLon])
-            } else {
-                coordsBoundLane.push([laneData.lat[i] - deltaLan, laneData.lon[i] - deltaLon])
-            }
-        }
-        return coordsBoundLane
-    }
-
-    //Получение координат для средней линии
-    function getCoordsMiddleLane(laneData) {
-        const arrayOfCoords = []
-        for (let i = 0; i < laneData.lat.length; i++) {
-            arrayOfCoords.push([laneData.lat[i], laneData.lon[i]])
-        }
-        if (laneData.directionalUse === '10') {
-            arrayOfCoords.reverse()
-        }
-
-        return arrayOfCoords
-    }
-
-    const drawnLanes = []
-
-    intersection.lanesData.forEach(laneData => {
-
-        let deltaLat, deltaLon
-        if (Math.abs(laneData.lat[0] - laneData.lat[laneData.lat.length - 1]) < Math.abs(laneData.lon[0] - laneData.lon[laneData.lon.length - 1])) {
-            deltaLat = getDeltaLatLon(laneData.lat[0], laneData.lon[0], (intersection.laneWidth) / 2).lat
-            deltaLon = 0
-        } else {
-            deltaLat = 0
-            deltaLon = getDeltaLatLon(laneData.lat[0], laneData.lon[0], (intersection.laneWidth) / 2).lon
-        }
-
-        const coordsOfUpBoundLane = getCoordsBoundLane(laneData, 'UP', deltaLat, deltaLon)
-        const coordsOfBottomBoundLane = getCoordsBoundLane(laneData, 'DOWN', deltaLat, deltaLon)
-        const coordsMiddleLane = getCoordsMiddleLane(laneData)
-
-        const middleLane = L.polyline(coordsMiddleLane, {weight: 1}).addTo(map)
-
-        let stopLine = null
-
-        if (laneData['directionalUse'] === '10') {
-            stopLine = L.polyline([[coordsMiddleLane[coordsMiddleLane.length - 1][0] + deltaLat, coordsMiddleLane[coordsMiddleLane.length - 1][1] + deltaLon],
-                [coordsMiddleLane[coordsMiddleLane.length - 1][0] - deltaLat, coordsMiddleLane[coordsMiddleLane.length - 1][1] - deltaLon]], {
-                weight: 8,
-                color: '#03fce8'
-            }).addTo(map)
-        }
-
-        const multiPolyline = L.polygon([...coordsOfUpBoundLane, ...coordsOfBottomBoundLane.reverse()], {
-            color: 'black',
-            weight: 1,
-            fillColor: 'black'
-        }).addTo(map)
-
-        const middleLaneDecorator = L.polylineDecorator(middleLane, {
-            patterns: [
-                {
-                    offset: '20%',
-                    repeat: 70,
-                    symbol: L.Symbol.arrowHead({pixelSize: 10, polygon: false, pathOptions: {stroke: true}})
-                }
-            ]
-        }).addTo(map);
-
-        drawnLanes.push({
-            'stopLine': stopLine,
-            'delta': {deltaLat, deltaLon},
-            'connectingLanes': laneData.connectingLanes,
-            'laneID': laneData.laneID,
-            'middleLane': middleLane,
-            'bounds': multiPolyline,
-            'middleLaneDecorator': middleLaneDecorator
-        })
-    })
-    return drawnLanes
 }
 
 
 export {
-    intersectionDrawHandler,
     DrawingIntersections
 }
 

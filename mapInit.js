@@ -1,12 +1,12 @@
 import MapFactory from './mapFactory.js'
 import {stringXML} from "./getXMLString.js";
 import {parseXML, parseXML_v2} from "./parserXML.js";
-import {intersectionDrawHandler, DrawingIntersections} from "./intersectionDrawHandler.js";
+import {DrawingIntersections} from "./intersectionDrawHandler.js";
 
 const objectMap = MapFactory.getMap('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 20,
     attribution: '© OpenStreetMap',
-    opacity: 0.8
+    opacity: 1
 })
 
 //Сделать перекрестки отдельными объектами (т.к. их может быть много)

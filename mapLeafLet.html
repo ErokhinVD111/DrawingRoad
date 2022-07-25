@@ -10,18 +10,31 @@
             integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
             crossorigin=""></script>
     <script src="http://bbecquet.github.io/Leaflet.PolylineDecorator/dist/leaflet.polylineDecorator.js"></script>
-    <script src="https://github.com/elfalem/Leaflet.curve/blob/gh-pages/src/leaflet.curve.js"></script>
-    <script src="leaflet.curve.js"></script>
-    <script src='//unpkg.com/leaflet-arc/bin/leaflet-arc.min.js'></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+          rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+          crossorigin="anonymous"
+    />
+    <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/demo/demo.css">
+    <script type="text/javascript" src="https://www.jeasyui.com/easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.jeasyui.com/easyui/jquery.easyui.min.js"></script>
     <style>
         #map {
-            height: 500px;
-            width: 700px;
+            height: 100%;
+            width: 100%;
         }
     </style>
 </head>
-<body>
-    <div id="map"></div>
-    <script type="module" src="mapInit.js"></script>
+<body class="easyui-layout">
+    <div data-options="region:'west',title:'Информация о полосе',split:true" style="width:300px;background:#ffffff;">
+        <p id="p1"></p>
+    </div>
+    <div data-options="region:'center',title:'Карта'" style="padding:5px;background:#ffffff;">
+        <div id="map"></div>
+        <script type="module" src="mapInit.js"></script>
+    </div>
+
 </body>
 </html>

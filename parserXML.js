@@ -197,7 +197,8 @@ function parseXML_v2(stringXML) {
         laneData['lon'] = nodeLon
 
         laneData['directionalUse'] = genericLane['laneAttributes']['directionalUse']
-        laneData['laneType'] = genericLane['laneAttributes']['laneType']['vehicle']
+        //laneData['laneType'] = genericLane['laneAttributes']['laneType']['vehicle']
+        laneData['laneType'] = Object.keys(genericLane['laneAttributes']['laneType'])[0]
         laneData['sharedWith'] = genericLane['laneAttributes']['sharedWith']
 
         lanesData.push(laneData)
