@@ -120,6 +120,11 @@ class DrawingLanes {
         this.drawnLanes = []
     }
 
+    //Возвращает массив из отрисованных объектов
+    getDrawnLanes() {
+        return this.drawnLanes
+    }
+
     //Метод для отрисовки полос из массива lanesData
     drawLanes() {
         this.lanesData.forEach(laneData => this.drawLane(laneData))
@@ -140,6 +145,14 @@ class DrawingLanes {
 
         //Создаем единый объект из нарисованных объектов и добавляем в массив
         this.drawnLanes.push({
+            laneInfo: {
+                sharedWith: laneData.sharedWith,
+                maneuvers: laneData.maneuvers,
+                laneType: laneData.laneType,
+                directionalUse: laneData.directionalUse,
+                laneID: laneData.laneID,
+                connectingLanes: laneData.connectingLanes
+            },
             middleLineWithDecorator,
             bounds,
             stopLine,
@@ -250,18 +263,24 @@ class DrawingIntersections {
     }
 
     drawIntersections() {
-        this.arrayOfIntersections.forEach(intersection => {
-            intersection.lanesData.forEach(laneData => {
-                this.drawLane(laneData, intersection, this.map)
-            })
-        })
-        this.addConnectingLanes()
+        this.arrayOfIntersections.forEach(intersection => this.drawIntersection(intersection))
+        // this.arrayOfIntersections.forEach(intersection => {
+        //     intersection.lanesData.forEach(laneData => {
+        //         this.drawLane(laneData, intersection, this.map)
+        //     })
+        // })
+        // this.addConnectingLanes()
     }
 
     drawIntersection(intersection) {
-
+        intersection.lanesData.forEach(laneData => {
+            const drawingLanes = new DrawingLanes(laneData, this.map)
+            drawingLanes.drawLanes()
+            const drawingConnectingLanes = new DrawingConnectingLines(drawingLanes.getDrawnLanes(), this.map)
+            drawingConnectingLanes.addClickEventOnLanes()
+        })
     }
-
+    
     drawLane(laneData, intersection, map) {
         //Получение координат для границ полосы
         function getCoordsBoundLane(typeBound, deltaLan, deltaLon) {
