@@ -1,4 +1,4 @@
-import {getDeltaLatLon} from "./calculateDistance.js"
+import {getDeltaLatLon} from "../calculateDistance.js"
 
 //Создать классы: DrawingLanes, DrawingConnectingLanes
 

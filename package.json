@@ -3,7 +3,7 @@
   "name": "drawingroad",
   "version": "1.0.0",
   "description": "",
-  "main": "mapFactory.js",
+  "main": "Map/mapFactory.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

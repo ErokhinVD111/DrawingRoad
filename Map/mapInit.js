@@ -1,12 +1,12 @@
 import MapFactory from './mapFactory.js'
 //убрать
-import {stringXML} from "./getXMLString.js";
+import {stringXML} from "../getXMLString.js";
 //убрать
-import {parseXML, parseXML_v2} from "./parserXML.js";
+import {parseXML, parseXML_v2} from "../parserXML.js";
 
-import {DrawingIntersections} from "./intersectionDrawHandler.js";
+import {DrawingIntersections} from "../IntersectionsHandler/intersectionDrawHandler.js";
 
-import {Parser} from "./Parser/Parser.js";
+import {Parser} from "../Parser/Parser.js";
 
 function getRequest(url) {
     const sender = new XMLHttpRequest()
