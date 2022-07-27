@@ -157,7 +157,8 @@ function parseXML_v2(stringXML) {
     //jsonObject['MapData']['intersections'].forEach(intersection => {})
 
     objectIntersection['id'] = jsonObject['MapData']['intersections']['IntersectionGeometry']['id']
-    objectIntersection['laneWidth'] = jsonObject['MapData']['intersections']['IntersectionGeometry']['laneWidth'] / 100
+
+    //objectIntersection['laneWidth'] = jsonObject['MapData']['intersections']['IntersectionGeometry']['laneWidth'] / 100
 
     const intersectionLat = jsonObject['MapData']['intersections']['IntersectionGeometry']['refPoint']['lat'] / 10000000
     const intersectionLon = jsonObject['MapData']['intersections']['IntersectionGeometry']['refPoint']['long'] / 10000000
@@ -182,7 +183,7 @@ function parseXML_v2(stringXML) {
         catch (e) {
 
         }
-
+        laneData['laneWidth'] = jsonObject['MapData']['intersections']['IntersectionGeometry']['laneWidth'] / 100
         laneData['connectingLanes'] = connectingLanes
         laneData['maneuvers'] = genericLane['maneuvers']
         laneData['laneID'] = genericLane['laneID']
