@@ -1,4 +1,4 @@
-import {xml2json} from "../xml2json.js";
+import {xml2json} from "./xml2json.js";
 
 class AbstractParser {
     static getDataFromFile(stringXML) {}

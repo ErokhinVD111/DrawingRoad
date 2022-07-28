@@ -7,7 +7,7 @@ class MapDataParser extends AbstractParser {
         const jsonObject = this.parseXMLtoJSON(stringXML)
 
         //Массив из перекрестков
-        const mapData = []
+        const arrayOfIntersections = []
 
         //Объект, который будет добавлен в массив
         const objectIntersection = {}
@@ -18,12 +18,18 @@ class MapDataParser extends AbstractParser {
         const intersectionLon = jsonObject['MapData']['intersections']['IntersectionGeometry']['refPoint']['long'] / 10000000
 
         objectIntersection['refPoint'] = {lat: intersectionLat, lon: intersectionLon}
-        objectIntersection['speedLimit'] = jsonObject['MapData']
-            ['intersections']
-            ['IntersectionGeometry']
-            ['speedLimits']
-            ['RegulatorySpeedLimit']
-            ['speed']
+
+        try {
+            objectIntersection['speedLimit'] = jsonObject['MapData']
+                ['intersections']
+                ['IntersectionGeometry']
+                ['speedLimits']
+                ['RegulatorySpeedLimit']
+                ['speed']
+        }
+        catch (e) {
+
+        }
 
         const lanesData = []
 
@@ -58,9 +64,9 @@ class MapDataParser extends AbstractParser {
         })
         objectIntersection['lanesData'] = lanesData
 
-        mapData.push(objectIntersection)
+        arrayOfIntersections.push(objectIntersection)
 
-        return mapData
+        return arrayOfIntersections
 
     }
 }
