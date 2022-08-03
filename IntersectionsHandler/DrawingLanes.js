@@ -19,7 +19,7 @@ class DrawingLanes {
     }
 
     //Метод для создания единого объекта из нарисованных объектов и добавление их в массив
-    addDrawnLanes(laneData, bounds, middleLineWithDecorator, stopLine) {
+    createDrawnLanes(laneData, bounds, middleLineWithDecorator, stopLine, coordsForBounds) {
         this.drawnLanes.push({
             laneInfo: {
                 sharedWith: laneData.sharedWith,
@@ -35,7 +35,9 @@ class DrawingLanes {
             middleLineWithDecorator,
             bounds,
             stopLine,
-            connectedLanes: []
+            connectedLanes: [],
+            firstBound: coordsForBounds.coordsForFirstBound,
+            secondBound: coordsForBounds.coordsForSecondBound
         })
     }
 
@@ -54,18 +56,49 @@ class DrawingLanes {
         const stopLine = this.drawStopLine(coordsForMiddleLine, laneData, delta)
 
         //Добавляем в массив
-        this.addDrawnLanes(laneData, bounds, middleLineWithDecorator, stopLine)
+        this.createDrawnLanes(laneData, bounds, middleLineWithDecorator, stopLine, {
+            coordsForFirstBound,
+            coordsForSecondBound
+        })
+
     }
 
     //Метод для получения координат для верхней и нижней границы
     //Данные координаты используются для отрисовки ширины полосы
     getCoordsForBound(laneData, typeBound, delta) {
         const coordsBoundLane = []
+        const k = (laneData.lat[0] - laneData.lat[laneData.lat.length-1]) / (laneData.lon[0] - laneData.lon[laneData.lon.length-1])
+        console.log(k)
         for (let i = 0; i < laneData.lon.length; i++) {
-            if (typeBound === 'UP') {
-                coordsBoundLane.push([laneData.lat[i] + delta.lat, laneData.lon[i] + delta.lon])
-            } else {
-                coordsBoundLane.push([laneData.lat[i] - delta.lat, laneData.lon[i] - delta.lon])
+            if (k > 0) {
+                if (typeBound === 'UP') {
+                    const pointOne = {lat: laneData.lat[i] + delta.lat, lon: laneData.lon[i]}
+                    const pointTwo = {lat: laneData.lat[i], lon: laneData.lon[i] - delta.lon}
+                    const pointMiddle = {lat: (pointOne.lat + pointTwo.lat) / 2, lon: (pointOne.lon + pointTwo.lon) / 2}
+                    // coordsBoundLane.push([laneData.lat[i] + delta.lat, laneData.lon[i] + delta.lon])
+                    coordsBoundLane.push([pointMiddle.lat, pointMiddle.lon])
+                } else {
+                    // coordsBoundLane.push([laneData.lat[i] - delta.lat, laneData.lon[i] - delta.lon])
+                    const pointOne = {lat: laneData.lat[i] - delta.lat, lon: laneData.lon[i]}
+                    const pointTwo = {lat: laneData.lat[i], lon: laneData.lon[i] + delta.lon}
+                    const pointMiddle = {lat: (pointOne.lat + pointTwo.lat) / 2, lon: (pointOne.lon + pointTwo.lon) / 2}
+                    coordsBoundLane.push([pointMiddle.lat, pointMiddle.lon])
+                }
+            }
+            else {
+                if (typeBound === 'UP') {
+                    const pointOne = {lat: laneData.lat[i] - delta.lat, lon: laneData.lon[i]}
+                    const pointTwo = {lat: laneData.lat[i], lon: laneData.lon[i] - delta.lon}
+                    const pointMiddle = {lat: (pointOne.lat + pointTwo.lat) / 2, lon: (pointOne.lon + pointTwo.lon) / 2}
+                    // coordsBoundLane.push([laneData.lat[i] + delta.lat, laneData.lon[i] + delta.lon])
+                    coordsBoundLane.push([pointMiddle.lat, pointMiddle.lon])
+                } else {
+                    // coordsBoundLane.push([laneData.lat[i] - delta.lat, laneData.lon[i] - delta.lon])
+                    const pointOne = {lat: laneData.lat[i] + delta.lat, lon: laneData.lon[i]}
+                    const pointTwo = {lat: laneData.lat[i], lon: laneData.lon[i] + delta.lon}
+                    const pointMiddle = {lat: (pointOne.lat + pointTwo.lat) / 2, lon: (pointOne.lon + pointTwo.lon) / 2}
+                    coordsBoundLane.push([pointMiddle.lat, pointMiddle.lon])
+                }
             }
         }
         return coordsBoundLane
@@ -127,16 +160,18 @@ class DrawingLanes {
         // }
 
         let deltaLat, deltaLon
-        //Если больше изменяется долгота, то границы будут более вертикальными
-        if (Math.abs(laneData.lat[0] - laneData.lat[laneData.lat.length - 1]) < Math.abs(laneData.lon[0] - laneData.lon[laneData.lon.length - 1])) {
-            deltaLat = getDeltaLatLon(laneData.lat[0], laneData.lon[0], (laneData.laneWidth) / 2).lat
-            deltaLon = 0
-        }
-        //Если больше изменяется широта, то границы будут более горизонтальными
-        else {
-            deltaLat = 0
-            deltaLon = getDeltaLatLon(laneData.lat[0], laneData.lon[0], (laneData.laneWidth) / 2).lon
-        }
+        // //Если больше изменяется долгота, то границы будут более вертикальными
+        // if (Math.abs(laneData.lat[0] - laneData.lat[laneData.lat.length - 1]) < Math.abs(laneData.lon[0] - laneData.lon[laneData.lon.length - 1])) {
+        //     deltaLat = getDeltaLatLon(laneData.lat[0], laneData.lon[0], (laneData.laneWidth) / 2).lat
+        //     deltaLon = 0
+        // }
+        // //Если больше изменяется широта, то границы будут более горизонтальными
+        // else {
+        //     deltaLat = 0
+        //     deltaLon = getDeltaLatLon(laneData.lat[0], laneData.lon[0], (laneData.laneWidth) / 2).lon
+        // }
+        deltaLat = getDeltaLatLon(laneData.lat[0], laneData.lon[0], (laneData.laneWidth) / 2).lat
+        deltaLon = getDeltaLatLon(laneData.lat[0], laneData.lon[0], (laneData.laneWidth) / 2).lon
 
         return {lat: deltaLat, lon: deltaLon}
     }
@@ -184,6 +219,32 @@ class DrawingLanes {
             }).addTo(this.map)
         }
         return stopLine
+    }
+
+    addMouseoverEventOnLanes() {
+        this.drawnLanes.forEach((drawnLane) => {
+            drawnLane.bounds.on('mouseover', (e) => this.bringToFront(drawnLane))
+            drawnLane.middleLineWithDecorator.middleLine.on('mouseover', (e) => this.bringToFront(drawnLane))
+            drawnLane.middleLineWithDecorator.middleLineDecorator.on('mouseover', (e) => this.bringToFront(drawnLane))
+            drawnLane.bounds.on('mouseout', (e) => this.bringToBack(drawnLane))
+        })
+    }
+
+    //Перерисовка полос в зависимости от наведения на них мышки
+    bringToFront(drawnLane) {
+        drawnLane.bounds.bringToFront()
+        drawnLane.bounds.setStyle({fillOpacity: 0.8})
+        drawnLane.middleLineWithDecorator.middleLine.bringToFront()
+        drawnLane.middleLineWithDecorator.middleLineDecorator.bringToFront()
+        try {
+            drawnLane.stopLine.bringToFront()
+        } catch (e) {
+
+        }
+    }
+
+    bringToBack(drawnLane) {
+        drawnLane.bounds.setStyle({fillOpacity: 0.5})
     }
 }
 

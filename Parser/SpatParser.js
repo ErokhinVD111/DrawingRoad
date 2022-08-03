@@ -20,8 +20,8 @@ class SpatParser extends AbstractParser {
                 states.push({
                     signalGroup: movementState['signalGroup'],
                     eventState: Object.keys(movementEvent['eventState'])[0],
-                    startTime: movementEvent['timing']['startTime'],
-                    minEndTime: movementEvent['timing']['minEndTime']
+                    startTime: movementEvent['timing']['startTime'] / 10,
+                    minEndTime: movementEvent['timing']['minEndTime'] / 10
                 })
             })
         })

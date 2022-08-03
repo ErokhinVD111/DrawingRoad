@@ -63,19 +63,35 @@ class DrawingConnectingLines {
 
     //Метод для отрисовки линий съезда
     findConnectingLines(drawnLane) {
-
         //Проверка на удаление
         function checkOnRemove() {
             return drawnLane.connectingLanes.length === drawnLane.connectedLanes.length && drawnLane.connectedLanes.length !== 0
                 || drawnLane.info.length > 0;
 
         }
+
         if (checkOnRemove()) {
             this.removeConnectingLines(drawnLane)
-        }
-        else {
+        } else {
             //Задаем цвет для соединительных линий
-            const color = '#' + (Math.random().toString(16) + '000000').substring(2,8).toUpperCase()
+            const randomNumber = (maxNum) => Math.floor(Math.random() * maxNum)
+            const colors = [
+                '#eb02f7',
+                '#8d02f7',
+                '#4002f7',
+                '#f74c02',
+                '#f71b02',
+                '#369905',
+                '#057e99',
+                '#310599',
+                '#6f9905',
+                '#06d136',
+                '#7a1f2c',
+                '#7a491f',
+                '#35516e'
+            ]
+            const color = '#4f5be0'
+
             //Ищем полосу с нужным laneID и соединяем
             this.drawnLanes.forEach(anotherLane => {
                 anotherLane.info = ''

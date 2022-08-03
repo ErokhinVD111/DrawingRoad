@@ -1,5 +1,6 @@
 import {MapDataParser} from "./MapDataParser.js";
 import {SpatParser} from "./SpatParser.js";
+import {DenmParser} from "./DenmParser.js";
 
 class Parser {
     static getMapDataObject(xmlFile) {
@@ -7,6 +8,9 @@ class Parser {
     }
     static getSpatObject(xmlFile) {
         return SpatParser.getDataFromFile(xmlFile)
+    }
+    static getDenmObject(xmlFile) {
+        return DenmParser.getDataFromFile(xmlFile)
     }
 }
 

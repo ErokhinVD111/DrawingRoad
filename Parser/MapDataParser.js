@@ -12,7 +12,7 @@ class MapDataParser extends AbstractParser {
         //Объект, который будет добавлен в массив
         const objectIntersection = {}
 
-        objectIntersection['id'] = jsonObject['MapData']['intersections']['IntersectionGeometry']['id']
+        objectIntersection['id'] = jsonObject['MapData']['intersections']['IntersectionGeometry']['id']['id']
 
         const intersectionLat = jsonObject['MapData']['intersections']['IntersectionGeometry']['refPoint']['lat'] / 10000000
         const intersectionLon = jsonObject['MapData']['intersections']['IntersectionGeometry']['refPoint']['long'] / 10000000
